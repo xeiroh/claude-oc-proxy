@@ -1,6 +1,8 @@
 # claude-oc-proxy
 
-Transparent proxy that adds/strips `oc_` tool name (configurable) prefixes for Claude API requests. Works with [CLI Proxy API](https://github.com/router-for-me/CLIProxyAPI).
+Transparent proxy that adds/strips tool name prefixes for Claude API requests. Works with [CLI Proxy API](https://github.com/router-for-me/CLIProxyAPI).
+
+Default prefix: `zzz_` (configurable via `--prefix`)
 
 
 ## Quick Start
@@ -77,14 +79,19 @@ npx @xeiroh/claude-oc-proxy [OPTIONS]
 |--------|---------|-------------|
 | `-p, --port <port>` | `8318` | Listen port |
 | `-u, --upstream <url>` | `http://localhost:8317` | Upstream API URL |
+| `--prefix <prefix>` | `zzz_` | Tool name prefix |
 | `-s, --setup` | | Interactive setup wizard |
 | `-h, --help` | | Show help |
 
 ### Examples
 
 ```bash
-# Start with defaults
+# Start with defaults (prefix: zzz_)
 npx @xeiroh/claude-oc-proxy
+
+# Custom prefix
+npx @xeiroh/claude-oc-proxy --prefix oc_
+npx @xeiroh/claude-oc-proxy --prefix myapp_
 
 # Custom port
 npx @xeiroh/claude-oc-proxy -p 9000
@@ -92,8 +99,8 @@ npx @xeiroh/claude-oc-proxy -p 9000
 # Custom upstream
 npx @xeiroh/claude-oc-proxy -u http://myapi:8000
 
-# Both
-npx @xeiroh/claude-oc-proxy -p 9000 -u http://myapi:8000
+# Combined options
+npx @xeiroh/claude-oc-proxy -p 9000 --prefix oc_
 
 # Interactive setup
 npx @xeiroh/claude-oc-proxy --setup
@@ -138,9 +145,11 @@ Use: `local/claude-opus-4-5-20251101`
 ```
 Client → claude-oc-proxy (:8318) → CLI Proxy API (:8317) → Claude API
               ↓                           ↓
-         adds oc_ prefix            handles OAuth
+         adds prefix              handles OAuth
          strips on response
 ```
+
+The proxy adds a configurable prefix (default: `zzz_`) to tool names in requests and strips it from responses. This works around Claude API restrictions on tool naming.
 
 ## Credits
 
