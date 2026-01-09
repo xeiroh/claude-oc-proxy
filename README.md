@@ -138,6 +138,10 @@ Client → claude-oc-proxy (:8318) → CLI Proxy API (:8317) → Claude API
          strips on response
 ```
 
+## Credits
+
+Inspired by [opencode-anthropic-auth](https://github.com/anomalyco/opencode-anthropic-auth/pull/10).
+
 ## License
 
 MIT

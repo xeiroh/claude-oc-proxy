@@ -268,4 +268,28 @@ function startProxy(PORT: number = DEFAULT_PORT, UPSTREAM: string = DEFAULT_UPST
   console.log(`claude-oc-proxy listening on port ${PORT}`);
   console.log(`Proxying to: ${UPSTREAM}`);
   console.log(`\nEndpoint: http://localhost:${PORT}/v1`);
+  console.log(`
+Add this to your ~/.config/opencode/opencode.json:
+
+{
+  "provider": {
+    "local": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "Local",
+      "options": {
+        "baseURL": "http://localhost:${PORT}/v1",
+        "apiKey": "not-needed"
+      },
+      "models": {
+        "claude-sonnet-4-5-20250929": {
+          "name": "Claude Sonnet 4.5",
+          "limit": { "context": 200000, "output": 16000 }
+        }
+      }
+    }
+  }
+}
+
+Then use: local/claude-sonnet-4-5-20250929
+`);
 }
