@@ -26,7 +26,111 @@ if (args.includes("--help") || args.includes("-h")) {
 } else if (args.includes("--setup") || args.includes("-s")) {
   await runSetup();
 } else {
-  startProxy(port, upstream);
+  await smartStart(port, upstream);
+}
+
+async function checkUpstreamHealth(upstreamUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${upstreamUrl}/v1/models`, {
+      signal: AbortSignal.timeout(2000),
+    });
+    return response.ok;
+  } catch {
+    try {
+      const response = await fetch(upstreamUrl, {
+        signal: AbortSignal.timeout(2000),
+      });
+      return response.status < 500;
+    } catch {
+      return false;
+    }
+  }
+}
+
+async function waitForUpstream(upstreamUrl: string, maxWaitMs: number = 10000): Promise<boolean> {
+  const start = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    if (await checkUpstreamHealth(upstreamUrl)) {
+      return true;
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  return false;
+}
+
+let cliProxyProcess: ReturnType<typeof spawn> | null = null;
+
+async function smartStart(PORT: number, UPSTREAM: string) {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const ask = (q: string): Promise<string> =>
+    new Promise((res) => rl.question(q, res));
+
+  console.log(`Checking upstream at ${UPSTREAM}...`);
+
+  const isHealthy = await checkUpstreamHealth(UPSTREAM);
+
+  if (isHealthy) {
+    console.log("Upstream is healthy!\n");
+    rl.close();
+    startProxy(PORT, UPSTREAM);
+    return;
+  }
+
+  console.log("Upstream not responding.\n");
+
+  const binary = getCliProxyApiBinary();
+
+  if (!binary) {
+    console.log("cli-proxy-api is not installed.");
+    const doSetup = await ask("Run setup to install it? (y/n): ");
+    rl.close();
+    if (doSetup.toLowerCase() === "y") {
+      await runSetup();
+    } else {
+      console.log("\nCannot start proxy without upstream. Exiting.");
+      process.exit(1);
+    }
+    return;
+  }
+
+  console.log(`cli-proxy-api found: ${binary}`);
+  const runIt = await ask("Start cli-proxy-api in background? (y/n): ");
+
+  if (runIt.toLowerCase() !== "y") {
+    console.log("\nCannot start proxy without upstream. Exiting.");
+    rl.close();
+    process.exit(1);
+  }
+
+  rl.close();
+
+  console.log("\nStarting cli-proxy-api...");
+  cliProxyProcess = spawn(binary, [], {
+    stdio: ["ignore", "pipe", "pipe"],
+    detached: false,
+  });
+
+  cliProxyProcess.stdout?.on("data", (d) => process.stdout.write(`[cli-proxy-api] ${d}`));
+  cliProxyProcess.stderr?.on("data", (d) => process.stderr.write(`[cli-proxy-api] ${d}`));
+
+  console.log("Waiting for cli-proxy-api to be ready...");
+  const ready = await waitForUpstream(UPSTREAM);
+
+  if (!ready) {
+    console.error("\ncli-proxy-api failed to start or is not responding.");
+    console.error("Check your config.yaml or run: cli-proxy-api -claude-login");
+    cliProxyProcess.kill();
+    process.exit(1);
+  }
+
+  console.log("cli-proxy-api is ready!\n");
+  startProxy(PORT, UPSTREAM);
+
+  process.on("SIGINT", () => {
+    console.log("\nShutting down...");
+    cliProxyProcess?.kill();
+    process.exit(0);
+  });
 }
 
 function showHelp() {
