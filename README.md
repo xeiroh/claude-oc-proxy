@@ -140,7 +140,7 @@ Client → claude-oc-proxy (:8318) → CLI Proxy API (:8317) → Claude API
 
 ## Credits
 
-Inspired by [opencode-anthropic-auth](https://github.com/anomalyco/opencode-anthropic-auth/pull/10).
+Tool prefixing workaround discovered in [anomalyco/opencode-anthropic-auth#10](https://github.com/anomalyco/opencode-anthropic-auth/pull/10).
 
 ## License
 

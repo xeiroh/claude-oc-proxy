@@ -281,15 +281,18 @@ Add this to your ~/.config/opencode/opencode.json:
         "apiKey": "not-needed"
       },
       "models": {
-        "claude-sonnet-4-5-20250929": {
-          "name": "Claude Sonnet 4.5",
-          "limit": { "context": 200000, "output": 16000 }
+        "claude-opus-4-5-20251101": {
+          "name": "Claude Opus 4.5",
+          "limit": { "context": 200000, "output": 64000 },
+          "options": {
+            "thinking": { "type": "enabled", "budgetTokens": 32000 }
+          }
         }
       }
     }
   }
 }
 
-Then use: local/claude-sonnet-4-5-20250929
+Then use: local/claude-opus-4-5-20251101
 `);
 }
