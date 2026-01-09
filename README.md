@@ -19,6 +19,7 @@ pnpm dlx @xeiroh/claude-oc-proxy --help
 
 ## Quick Start
 
+**Basically all you need to do: **
 ```bash
 npx @xeiroh/claude-oc-proxy --setup
 ```
@@ -27,7 +28,7 @@ This will:
 1. Install CLI Proxy API (if missing)
 2. Run Claude OAuth login
 3. Start the proxy stack
-4. Print your endpoint
+4. Print your endpoint (which you can plug into opencode.json)
 
 ## Manual Setup
 
