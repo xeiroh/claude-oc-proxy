@@ -71,26 +71,33 @@ async function runSetup() {
 
   console.log("\n=== claude-oc-proxy setup ===\n");
 
-  const installed = isCliProxyApiInstalled();
-  if (!installed) {
+  let binary = getCliProxyApiBinary();
+  if (!binary) {
     console.log("cli-proxy-api not found.");
     const install = await ask("Install cli-proxy-api? (y/n): ");
     if (install.toLowerCase() === "y") {
       await installCliProxyApi();
+      binary = getCliProxyApiBinary();
+      if (!binary) {
+        console.error("Installation succeeded but binary not found in PATH.");
+        console.error("Try restarting your terminal or add it to PATH manually.");
+        rl.close();
+        process.exit(1);
+      }
     } else {
       console.log("Cannot proceed without cli-proxy-api. Exiting.");
       rl.close();
       process.exit(1);
     }
   } else {
-    console.log("cli-proxy-api found.");
+    console.log(`cli-proxy-api found: ${binary}`);
   }
 
   const doAuth = await ask("\nRun Claude OAuth login? (y/n): ");
   if (doAuth.toLowerCase() === "y") {
     console.log("\nStarting Claude OAuth flow...");
     console.log("Complete the login in your browser.\n");
-    const authResult = spawnSync("cli-proxy-api", ["-claude-login"], {
+    const authResult = spawnSync(binary, ["-claude-login"], {
       stdio: "inherit",
     });
     if (authResult.status !== 0) {
@@ -104,7 +111,7 @@ async function runSetup() {
   const startNow = await ask("\nStart proxy stack now? (y/n): ");
   if (startNow.toLowerCase() !== "y") {
     console.log("\nSetup complete. Run manually:");
-    console.log("  Terminal 1: cli-proxy-api");
+    console.log(`  Terminal 1: ${binary}`);
     console.log("  Terminal 2: bunx @xeiroh/claude-oc-proxy");
     rl.close();
     process.exit(0);
@@ -113,7 +120,7 @@ async function runSetup() {
   rl.close();
 
   console.log("\nStarting cli-proxy-api...");
-  const cliProxy = spawn("cli-proxy-api", [], {
+  const cliProxy = spawn(binary, [], {
     stdio: ["ignore", "pipe", "pipe"],
     detached: false,
   });
@@ -138,9 +145,13 @@ async function runSetup() {
   });
 }
 
-function isCliProxyApiInstalled(): boolean {
-  const result = spawnSync("which", ["cli-proxy-api"]);
-  return result.status === 0;
+function getCliProxyApiBinary(): string | null {
+  const names = ["cli-proxy-api", "cliproxyapi"];
+  for (const name of names) {
+    const result = spawnSync("which", [name]);
+    if (result.status === 0) return name;
+  }
+  return null;
 }
 
 async function installCliProxyApi() {
