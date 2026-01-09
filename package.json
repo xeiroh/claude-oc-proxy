@@ -10,14 +10,18 @@
   "scripts": {
     "start": "bun run index.ts"
   },
-  "keywords": ["claude", "anthropic", "proxy", "tools", "mcp", "cli-proxy-api"],
+  "keywords": [
+    "claude",
+    "anthropic",
+    "proxy",
+    "tools",
+    "mcp",
+    "cli-proxy-api"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/xeiroh/claude-oc-proxy.git"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
   },
   "engines": {
     "bun": ">=1.0.0"
