@@ -1,6 +1,6 @@
 {
   "name": "@xeiroh/claude-oc-proxy",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Transparent proxy that adds/strips oc_ tool name prefixes for Claude API requests",
   "type": "module",
   "main": "index.ts",
