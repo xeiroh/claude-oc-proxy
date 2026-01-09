@@ -2,6 +2,22 @@
 
 Transparent proxy that adds/strips `oc_` tool name prefixes for Claude API requests. Works with [CLI Proxy API](https://github.com/router-for-me/CLIProxyAPI).
 
+
+## Quick Start
+
+**Basically all you need to do:**
+```bash
+npx @xeiroh/claude-oc-proxy --setup
+```
+
+This will:
+1. Install CLI Proxy API (if missing)
+2. Run Claude OAuth login
+3. Start the proxy stack
+4. Print your endpoint (which you can plug into opencode.json)
+
+
+
 ## Installation
 
 No installation required. Run directly with npx or bunx:
@@ -16,19 +32,6 @@ bunx @xeiroh/claude-oc-proxy --help
 # Using pnpm
 pnpm dlx @xeiroh/claude-oc-proxy --help
 ```
-
-## Quick Start
-
-**Basically all you need to do:**
-```bash
-npx @xeiroh/claude-oc-proxy --setup
-```
-
-This will:
-1. Install CLI Proxy API (if missing)
-2. Run Claude OAuth login
-3. Start the proxy stack
-4. Print your endpoint (which you can plug into opencode.json)
 
 ## Manual Setup
 
