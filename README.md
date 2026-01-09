@@ -2,10 +2,25 @@
 
 Transparent proxy that adds/strips `oc_` tool name prefixes for Claude API requests. Works with [CLI Proxy API](https://github.com/router-for-me/CLIProxyAPI).
 
+## Installation
+
+No installation required. Run directly with npx or bunx:
+
+```bash
+# Using npx (Node.js)
+npx @xeiroh/claude-oc-proxy --help
+
+# Using bunx (Bun) - recommended
+bunx @xeiroh/claude-oc-proxy --help
+
+# Using pnpm
+pnpm dlx @xeiroh/claude-oc-proxy --help
+```
+
 ## Quick Start
 
 ```bash
-bunx @xeiroh/claude-oc-proxy --setup
+npx @xeiroh/claude-oc-proxy --setup
 ```
 
 This will:
@@ -37,20 +52,48 @@ cli-proxy-api -claude-login
 ### 3. Start
 
 ```bash
-cli-proxy-api                      # Terminal 1
-bunx @xeiroh/claude-oc-proxy       # Terminal 2
+# Terminal 1
+cli-proxy-api
+
+# Terminal 2
+npx @xeiroh/claude-oc-proxy
+# or
+bunx @xeiroh/claude-oc-proxy
 ```
 
 Endpoint: `http://localhost:8318/v1`
 
-## Configuration
+## Usage
+
+```bash
+npx @xeiroh/claude-oc-proxy [OPTIONS]
+```
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `-p, --port` | `8318` | Listen port |
-| `-u, --upstream` | `http://localhost:8317` | Upstream API URL |
+| `-p, --port <port>` | `8318` | Listen port |
+| `-u, --upstream <url>` | `http://localhost:8317` | Upstream API URL |
+| `-s, --setup` | | Interactive setup wizard |
+| `-h, --help` | | Show help |
 
-Example: `bunx @xeiroh/claude-oc-proxy -p 9000 -u http://myapi:8000`
+### Examples
+
+```bash
+# Start with defaults
+npx @xeiroh/claude-oc-proxy
+
+# Custom port
+npx @xeiroh/claude-oc-proxy -p 9000
+
+# Custom upstream
+npx @xeiroh/claude-oc-proxy -u http://myapi:8000
+
+# Both
+npx @xeiroh/claude-oc-proxy -p 9000 -u http://myapi:8000
+
+# Interactive setup
+npx @xeiroh/claude-oc-proxy --setup
+```
 
 ## OpenCode Setup
 
