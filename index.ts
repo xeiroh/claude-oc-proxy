@@ -2,7 +2,7 @@
 import { spawn, spawnSync } from "child_process";
 import { createInterface } from "readline";
 
-const TOOL_PREFIX = "oc_";
+const DEFAULT_PREFIX = "zzz_";
 const DEFAULT_UPSTREAM = "http://localhost:8317";
 const DEFAULT_PORT = 8318;
 
@@ -20,13 +20,14 @@ function getArg(flags: string[]): string | undefined {
 
 const port = parseInt(getArg(["-p", "--port"]) || String(DEFAULT_PORT), 10);
 const upstream = getArg(["-u", "--upstream"]) || DEFAULT_UPSTREAM;
+const prefix = getArg(["--prefix"]) || DEFAULT_PREFIX;
 
 if (args.includes("--help") || args.includes("-h")) {
   showHelp();
 } else if (args.includes("--setup") || args.includes("-s")) {
   await runSetup();
 } else {
-  await smartStart(port, upstream);
+  await smartStart(port, upstream, prefix);
 }
 
 async function checkUpstreamHealth(upstreamUrl: string): Promise<boolean> {
@@ -60,7 +61,7 @@ async function waitForUpstream(upstreamUrl: string, maxWaitMs: number = 10000): 
 
 let cliProxyProcess: ReturnType<typeof spawn> | null = null;
 
-async function smartStart(PORT: number, UPSTREAM: string) {
+async function smartStart(PORT: number, UPSTREAM: string, PREFIX: string) {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   const ask = (q: string): Promise<string> =>
     new Promise((res) => rl.question(q, res));
@@ -72,7 +73,7 @@ async function smartStart(PORT: number, UPSTREAM: string) {
   if (isHealthy) {
     console.log("Upstream is healthy!\n");
     rl.close();
-    startProxy(PORT, UPSTREAM);
+    startProxy(PORT, UPSTREAM, PREFIX);
     return;
   }
 
@@ -124,7 +125,7 @@ async function smartStart(PORT: number, UPSTREAM: string) {
   }
 
   console.log("cli-proxy-api is ready!\n");
-  startProxy(PORT, UPSTREAM);
+  startProxy(PORT, UPSTREAM, PREFIX);
 
   process.on("SIGINT", () => {
     console.log("\nShutting down...");
@@ -143,6 +144,7 @@ USAGE:
 OPTIONS:
   -p, --port <port>          Port to listen on (default: 8318)
   -u, --upstream <url>       Upstream API URL (default: http://localhost:8317)
+  --prefix <prefix>          Tool name prefix (default: zzz_)
   -s, --setup                Interactive setup (install cli-proxy-api, OAuth, start stack)
   -h, --help                 Show this help message
 
@@ -150,6 +152,7 @@ EXAMPLES:
   bunx @xeiroh/claude-oc-proxy                          # Start with defaults
   bunx @xeiroh/claude-oc-proxy -p 9000                  # Custom port
   bunx @xeiroh/claude-oc-proxy -u http://myapi:8000     # Custom upstream
+  bunx @xeiroh/claude-oc-proxy --prefix oc_             # Custom prefix
   bunx @xeiroh/claude-oc-proxy --setup                  # Interactive first-time setup
 
 MANUAL SETUP:
@@ -240,7 +243,7 @@ async function runSetup() {
   }
 
   console.log("Starting claude-oc-proxy...\n");
-  startProxy(port, upstream);
+  startProxy(port, upstream, prefix);
 
   process.on("SIGINT", () => {
     console.log("\nShutting down...");
@@ -294,7 +297,9 @@ async function installCliProxyApi() {
   console.log("Installation complete!");
 }
 
-function startProxy(PORT: number = DEFAULT_PORT, UPSTREAM: string = DEFAULT_UPSTREAM) {
+function startProxy(PORT: number = DEFAULT_PORT, UPSTREAM: string = DEFAULT_UPSTREAM, PREFIX: string = DEFAULT_PREFIX) {
+  const escapedPrefix = PREFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const stripPrefixRegex = new RegExp(`"name"\\s*:\\s*"${escapedPrefix}([^"]+)"`, 'g');
 
   Bun.serve({
     port: PORT,
@@ -320,13 +325,12 @@ function startProxy(PORT: number = DEFAULT_PORT, UPSTREAM: string = DEFAULT_UPST
           if (isAnthropic && parsed.tools && Array.isArray(parsed.tools)) {
             parsed.tools = parsed.tools.map((tool: any) => ({
               ...tool,
-              name: tool.name ? `${TOOL_PREFIX}${tool.name}` : tool.name,
+              name: tool.name ? `${PREFIX}${tool.name}` : tool.name,
             }));
           }
 
           body = JSON.stringify(parsed);
         } catch {
-          // Parse error - pass through
         }
       }
 
@@ -353,7 +357,7 @@ function startProxy(PORT: number = DEFAULT_PORT, UPSTREAM: string = DEFAULT_UPST
             }
 
             let text = decoder.decode(value, { stream: true });
-            text = text.replace(/"name"\s*:\s*"oc_([^"]+)"/g, '"name": "$1"');
+            text = text.replace(stripPrefixRegex, '"name": "$1"');
             controller.enqueue(encoder.encode(text));
           },
         });
@@ -371,6 +375,7 @@ function startProxy(PORT: number = DEFAULT_PORT, UPSTREAM: string = DEFAULT_UPST
 
   console.log(`claude-oc-proxy listening on port ${PORT}`);
   console.log(`Proxying to: ${UPSTREAM}`);
+  console.log(`Tool prefix: ${PREFIX}`);
   console.log(`\nEndpoint: http://localhost:${PORT}/v1`);
   console.log(`
 Add this to your ~/.config/opencode/opencode.json:
