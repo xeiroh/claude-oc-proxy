@@ -1,0 +1,15 @@
+node_modules/
+.DS_Store
+*.log
+.env
+
+# Auth files - never commit
+claude_auth.json
+*_auth.json
+*.auth.json
+/data/auth/
+
+# Test files
+Dockerfile
+config.yaml
+entrypoint.sh
