@@ -1,6 +1,6 @@
 # claude-oc-proxy
 
-Transparent proxy that adds/strips `oc_` tool name prefixes for Claude API requests. Works with [CLI Proxy API](https://github.com/router-for-me/CLIProxyAPI).
+Transparent proxy that adds/strips `oc_` tool name (configurable) prefixes for Claude API requests. Works with [CLI Proxy API](https://github.com/router-for-me/CLIProxyAPI).
 
 
 ## Quick Start
