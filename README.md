@@ -19,7 +19,7 @@ pnpm dlx @xeiroh/claude-oc-proxy --help
 
 ## Quick Start
 
-**Basically all you need to do: **
+**Basically all you need to do:**
 ```bash
 npx @xeiroh/claude-oc-proxy --setup
 ```
